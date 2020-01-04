@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">justapp</string>
+    <string name="title_home">课表</string>
+    <string name="title_dashboard">论坛</string>
+    <string name="title_notifications">我的</string>
+    <string name="title_app">工具</string>
+    <string name="title_activity_my_info">MyInfo</string>
+</resources>
