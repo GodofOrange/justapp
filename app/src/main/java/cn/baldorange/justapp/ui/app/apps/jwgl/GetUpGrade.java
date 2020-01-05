@@ -8,6 +8,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.IBinder;
@@ -21,9 +23,8 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.Date;
 
-import androidx.core.app.NotificationManagerCompat;
-import cn.baldorange.justapp.MainActivity;
 import cn.baldorange.justapp.R;
+import cn.baldorange.justapp.ui.Info.Info;
 import cn.baldorange.justapp.ui.util.AlarmReceiver;
 import cn.baldorange.justapp.ui.util.OKHttpClientBuilder;
 import okhttp3.Call;
@@ -44,7 +45,7 @@ public class GetUpGrade extends Service {
     PendingIntent alarmIntent = null;
     /** 标识是否可以使用onRebind */
     boolean mAllowRebind;
-
+    Info info;
     /** 当服务被创建时调用. */
     @Override
     public void onCreate() {
@@ -54,28 +55,39 @@ public class GetUpGrade extends Service {
     /** 调用startService()启动服务时回调 */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getUpGrade();
-                notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                Notification notification = new Notification.Builder(getApplicationContext(), "grade_info")
-                        .setContentTitle("收到新消息")
-                        .setContentText("教务系统成绩更新了，快来看啊！！"+ new Date())
-                        .setSmallIcon(R.drawable.ic_launcher_background)
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_background))
-                        .setWhen(System.currentTimeMillis())
-                        .build();
-                int notifiId = 1;
-                notificationManager.notify(notifiId, notification);
+        try {
+            this.info = getinfo();
+            if(this.info ==null){
+                Toast.makeText(getApplicationContext(),"请到我的->个人设置内保存密码", Toast.LENGTH_LONG).show();
+            }else {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getUpGrade();
+                        notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                        Notification notification = new Notification.Builder(getApplicationContext(), "grade_info")
+                                .setContentTitle("收到新消息")
+                                .setContentText("教务系统成绩更新了，快来看啊！！"+ new Date())
+                                .setSmallIcon(R.drawable.ic_launcher_background)
+                                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_background))
+                                .setWhen(System.currentTimeMillis())
+                                .build();
+                        int notifiId = 1;
+                        notificationManager.notify(notifiId, notification);
+                    }
+                }).start();
+                AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                int anHour = 60*1000;
+                long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
+                Intent i = new Intent(getApplicationContext(), AlarmReceiver.class);
+                PendingIntent pi = PendingIntent.getBroadcast(this, 0, i, 0);
+                manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi);
             }
-        }).start();
-        AlarmManager manager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int anHour = 60*1000;
-        long triggerAtTime = SystemClock.elapsedRealtime() + anHour;
-        Intent i = new Intent(getApplicationContext(), AlarmReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(this, 0, i, 0);
-        manager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pi);
+        }catch (Exception e){
+            Toast.makeText(getApplicationContext(),"请到我的->个人设置内保存密码", Toast.LENGTH_LONG).show();
+        }
+
+
         return mStartMode;
     }
 
@@ -135,5 +147,26 @@ public class GetUpGrade extends Service {
                 }).start();
             }
         });
+    }
+    public Info getinfo(){
+        SQLiteDatabase db = openOrCreateDatabase("user.db",MODE_PRIVATE,null);
+        Cursor c = db.rawQuery("select * from user where id = 1", null);
+        Info info = new Info();
+        if (c != null) {
+            c.moveToNext();
+            info.setStudyid(c.getString(c.getColumnIndex("studyid")));
+            info.setJwglpassword(c.getString(c.getColumnIndex("jwglpassword")));
+            info.setVpnpassword(c.getString(c.getColumnIndex("vpnpassword")));
+            info.setTiyupassword(c.getString(c.getColumnIndex("tiyupassword")));
+            info.setBanshidatingpassword(c.getString(c.getColumnIndex("banshidatingpassword")));
+            info.setBbsid(c.getString(c.getColumnIndex("bbsid")));
+            info.setBbspassword(c.getString(c.getColumnIndex("bbspassword")));
+            info.setAolanpassword(c.getString(c.getColumnIndex("aolanpassword")));
+            info.setShiyanzhanghao(c.getString(c.getColumnIndex("shiyanzhanghao")));
+            return info;
+        }else{
+            c.close();
+            return info;
+        }
     }
 }

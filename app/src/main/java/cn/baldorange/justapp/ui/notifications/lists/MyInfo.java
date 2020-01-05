@@ -57,7 +57,6 @@ public class MyInfo extends AppCompatActivity {
 
             }
         });
-
     }
 
     protected void init(){

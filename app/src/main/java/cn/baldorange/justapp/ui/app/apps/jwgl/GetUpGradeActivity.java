@@ -11,6 +11,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -24,7 +26,7 @@ import java.util.List;
 
 public class GetUpGradeActivity extends AppCompatActivity {
     private Switch switch1;
-
+    SQLiteDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,22 @@ public class GetUpGradeActivity extends AppCompatActivity {
                 }
             }
         });
+
+        db = openOrCreateDatabase("user.db",MODE_PRIVATE,null);
+        if(!isTableExist("grade")){
+            String sql = "create table grade(" +
+                    "id varchar(255)" +
+                    ",start varchar(255)" +
+                    ",number varchar(255)" +
+                    ",claName varchar(255)" +
+                    ",grade varchar(255)" +
+                    ",xuefen varchar(255)" +
+                    ",alltime varchar(255)" +
+                    ",kaohe varchar(255)" +
+                    ",shuxing varchar(255)" +
+                    ",prop varchar(255))";
+            db.execSQL(sql);
+        }
     }
     /**
      * 查看服务是否开启
@@ -58,6 +76,23 @@ public class GetUpGradeActivity extends AppCompatActivity {
             if (runningService.get(i).service.getClassName().equals(ServiceName)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public boolean isTableExist(String table) {
+
+        Cursor c = db.rawQuery("select count(*) from sqlite_master where type='table' and name='"+table+"'", null);
+        if (c != null) {
+            while (c.moveToNext()) {
+                int count = c.getInt(0);
+                if (count > 0) {
+                    c.close();
+                    return true;
+                }
+            }
+        }else{
+            c.close();
         }
         return false;
     }
