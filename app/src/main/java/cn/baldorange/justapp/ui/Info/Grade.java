@@ -1,5 +1,17 @@
 package cn.baldorange.justapp.ui.Info;
-
+/*
+Grade grade = new Grade();
+                                    grade.setId(it.next().text());
+                                    grade.setStart(it.next().text());
+                                    grade.setNumber(it.next().text());
+                                    grade.setClaName(it.next().text());
+                                    grade.setGrade(it.next().text());
+                                    grade.setXuefen(it.next().text());
+                                    grade.setAlltime(it.next().text());
+                                    grade.setKaohe(it.next().text());
+                                    grade.setShuxing(it.next().text());
+                                    grade.setProp(it.next().text());
+ */
 public class Grade {
     private String id;
     private String start;

@@ -22,12 +22,12 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 
 public class GetUpGradeActivity extends AppCompatActivity {
     private Switch switch1;
     SQLiteDatabase db;
-
+    NotificationManager   notificationManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,17 +38,27 @@ public class GetUpGradeActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked){
-                    Toast.makeText(getApplicationContext(),"成绩定时提醒服务开启", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"成绩更新提醒服务开启", Toast.LENGTH_LONG).show();
                     startService(new Intent(getApplicationContext(),GetUpGrade.class));
-
+                    notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                    Notification notification = new Notification.Builder(getApplicationContext(), "grade_info")
+                            .setContentTitle("科大辅助")
+                            .setContentText("您已成功创建成绩更新监听服务。请等待通知"+ new Date())
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher_background))
+                            .setWhen(System.currentTimeMillis())
+                            .build();
+                    int notifiId = 1;
+                    notificationManager.notify(notifiId, notification);
                 }else {
-                    Toast.makeText(getApplicationContext(),"成绩定时提醒服务关闭", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"成绩更新提醒服务关闭", Toast.LENGTH_LONG).show();
                     stopService(new Intent(getApplicationContext(), GetUpGrade.class));
                 }
             }
         });
 
         db = openOrCreateDatabase("user.db",MODE_PRIVATE,null);
+        /*
         if(!isTableExist("grade")){
             String sql = "create table grade(" +
                     "id varchar(255)" +
@@ -61,6 +71,10 @@ public class GetUpGradeActivity extends AppCompatActivity {
                     ",kaohe varchar(255)" +
                     ",shuxing varchar(255)" +
                     ",prop varchar(255))";
+            db.execSQL(sql);
+        }*/
+        if(!isTableExist("upgrade")){
+            String sql ="create table upgrade(nums int)";
             db.execSQL(sql);
         }
     }
@@ -96,4 +110,5 @@ public class GetUpGradeActivity extends AppCompatActivity {
         }
         return false;
     }
+
 }
